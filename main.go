@@ -479,43 +479,42 @@ function startAnim(){
 // ── Canvas drawing ────────────────────────────────────────────────────────────
 function draw(horses){
   const cv=$('cv');
-  const laneH=64;
-  const labelW=120;
-  const padT=18, padB=30;
+  const laneH=58;
+  const padT=24, padB=28;
   const H=horses.length*laneH+padT+padB;
   cv.height=H;
   cv.width=cv.offsetWidth||600;
   const W=cv.width;
   const ctx=cv.getContext('2d');
-  const trackL=labelW;
-  const trackR=W-28;
+  const trackL=12;
+  const trackR=W-24;
   const trackW=trackR-trackL;
 
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#070b12';
   ctx.fillRect(0,0,W,H);
 
-  // Grass strips top and bottom of track area
+  // Grass strips
   ctx.fillStyle='#091209';
-  ctx.fillRect(trackL,padT,trackW,12);
+  ctx.fillRect(trackL,padT,trackW,10);
   ctx.fillStyle='#091209';
-  ctx.fillRect(trackL,H-padB-12,trackW,12);
+  ctx.fillRect(trackL,H-padB-10,trackW,10);
 
   // Dirt track
   ctx.fillStyle='#110d08';
-  ctx.fillRect(trackL,padT+12,trackW,H-padT-padB-24);
+  ctx.fillRect(trackL,padT+10,trackW,H-padT-padB-20);
 
-  // Fence at bottom
+  // Fence
   ctx.strokeStyle='#3d2808';
   ctx.lineWidth=2;
   ctx.beginPath();
   ctx.moveTo(trackL,H-padB);
   ctx.lineTo(trackR,H-padB);
   ctx.stroke();
-  for(let fx=trackL;fx<=trackR;fx+=60){
+  for(let fx=trackL;fx<=trackR;fx+=50){
     ctx.beginPath();
-    ctx.moveTo(fx,H-padB-6);
-    ctx.lineTo(fx,H-padB+8);
+    ctx.moveTo(fx,H-padB-5);
+    ctx.lineTo(fx,H-padB+7);
     ctx.stroke();
   }
 
@@ -528,11 +527,15 @@ function draw(horses){
   ctx.lineTo(trackR,H-padB);
   ctx.stroke();
   ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,0.25)';
+  ctx.font='9px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('FINISH',trackR,padT-6);
 
   // Lane dividers
   horses.forEach((_,i)=>{
     if(i===0) return;
-    const y=padT+12+i*laneH-(laneH*0.1);
+    const y=padT+10+i*laneH-(laneH*0.08);
     ctx.strokeStyle='rgba(255,255,255,0.04)';
     ctx.lineWidth=1;
     ctx.beginPath();
@@ -541,31 +544,31 @@ function draw(horses){
     ctx.stroke();
   });
 
-  // Horses
   const t=Date.now();
   horses.forEach((h,i)=>{
-    const centerY=padT+12+(i+0.5)*laneH+4;
+    const centerY=padT+10+(i+0.5)*laneH+4;
     const pct=Math.min(h.position,100)/100;
     const hx=trackL+pct*trackW;
 
     // Glow trail
     if(h.position>2){
-      const grad=ctx.createLinearGradient(Math.max(trackL,hx-80),0,hx-4,0);
+      const grad=ctx.createLinearGradient(Math.max(trackL,hx-70),0,hx-4,0);
       grad.addColorStop(0,'rgba(0,0,0,0)');
-      grad.addColorStop(1,h.color+'44');
+      grad.addColorStop(1,h.color+'55');
       ctx.fillStyle=grad;
-      ctx.fillRect(Math.max(trackL,hx-80),centerY-8,Math.min(80,hx-trackL),16);
+      ctx.fillRect(Math.max(trackL,hx-70),centerY-7,Math.min(70,hx-trackL),14);
     }
 
-    // Label
-    ctx.font='500 12px -apple-system,sans-serif';
-    ctx.fillStyle=h.finished ? h.color : '#4a6080';
-    ctx.textAlign='right';
-    ctx.textBaseline='middle';
-    const short=h.name.length>11?h.name.slice(0,10)+'…':h.name;
-    ctx.fillText(short,trackL-8,centerY);
+    // Floating name above horse
+    const nameX=Math.min(hx, trackR-20);
+    ctx.font='500 11px -apple-system,sans-serif';
+    ctx.fillStyle=h.color;
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    const short=h.name.length>10?h.name.slice(0,9)+'…':h.name;
+    ctx.fillText(short, nameX, centerY-14);
 
-    // Draw pixel horse + jockey
+    // Draw horse (smaller S=1.5)
     drawPixelHorse(ctx,hx,centerY,h.color,h.jcolor,h.number,h.finished,t);
 
     // Place badge
@@ -573,19 +576,19 @@ function draw(horses){
       const bc=['#f5a623','#94a3b8','#cd7f32'];
       ctx.fillStyle=bc[h.place-1]||'#141e30';
       ctx.beginPath();
-      ctx.arc(trackR+16,centerY,10,0,Math.PI*2);
+      ctx.arc(trackR+14,centerY,9,0,Math.PI*2);
       ctx.fill();
       ctx.fillStyle=h.place<=2?'#000':'#fff';
-      ctx.font='bold 10px sans-serif';
+      ctx.font='bold 9px sans-serif';
       ctx.textAlign='center';
       ctx.textBaseline='middle';
-      ctx.fillText(h.place,trackR+16,centerY);
+      ctx.fillText(h.place,trackR+14,centerY);
     }
   });
 }
 
 function drawPixelHorse(ctx,x,y,hc,jc,num,finished,t){
-  const S=2.2; // pixel size
+  const S=1.5; // pixel size
   const p=(px,py,w,h,c)=>{
     ctx.fillStyle=c;
     ctx.fillRect(x+px*S,y+py*S,w*S,h*S);
